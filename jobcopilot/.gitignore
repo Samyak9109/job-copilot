@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+recallhire.db
+jobcopilot.db
+backend/uploads/
+!backend/uploads/.gitkeep
+
+# Env
+.env
+*.env
+!.env.example
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS
+.DS_Store

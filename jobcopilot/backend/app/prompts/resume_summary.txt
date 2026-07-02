@@ -1,0 +1,9 @@
+Write a resume summary (professional summary) for the candidate.
+
+CANDIDATE MEMORY (recalled by Cognee):
+{context}
+
+JOB DESCRIPTION:
+{job_description}
+
+TASK: Write a 3-4 line resume summary tailored to the job description. Use only relevant remembered skills and experience. Avoid exaggeration and do not invent anything.

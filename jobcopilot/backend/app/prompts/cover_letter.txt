@@ -1,0 +1,12 @@
+Write a personalized cover letter for the candidate.
+
+CANDIDATE MEMORY (recalled by Cognee):
+{context}
+
+JOB DESCRIPTION:
+{job_description}
+
+EXTRA INSTRUCTIONS:
+{extra_instructions}
+
+TASK: Produce a concise cover letter (max 300 words unless the extra instructions ask otherwise) with a professional opening, clear role/company alignment, the candidate's strongest matching skills, the most relevant remembered projects, and a closing paragraph. Use ONLY the recalled memory — never invent experience.

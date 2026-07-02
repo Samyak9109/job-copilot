@@ -1,0 +1,11 @@
+Perform a skill gap analysis for the candidate against the job.
+
+CANDIDATE MEMORY (recalled by Cognee):
+{context}
+
+JOB DESCRIPTION:
+{job_description}
+
+TASK: Compare the job's requirements against the candidate's recalled memory. Identify matched skills, missing skills, the most relevant remembered projects, resume keywords to add, a short concrete learning plan, an overall match score from 0-100, and a one-line recommendation. Base everything strictly on the recalled memory and the job description.
+
+{format_instructions}

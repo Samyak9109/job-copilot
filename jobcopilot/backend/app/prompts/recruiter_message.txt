@@ -1,0 +1,9 @@
+Write a short recruiter outreach message (LinkedIn or email) for the candidate.
+
+CANDIDATE MEMORY (recalled by Cognee):
+{context}
+
+JOB DESCRIPTION:
+{job_description}
+
+TASK: Write a concise recruiter message. Mention the role, the candidate's fit, and one strong remembered project or skill. End with a polite call to action. Keep it under 120 words.

@@ -1,0 +1,27 @@
+Generate a company-specific interview preparation question set for the candidate.
+
+COMPANY:
+{company}
+
+ROLE:
+{role}
+
+JOB DESCRIPTION:
+{job_description}
+
+CANDIDATE MEMORY (recalled by Cognee):
+{user_context}
+
+PAST INTERVIEW HISTORY (recalled by Cognee):
+{company_history}
+
+LIVE SEARCH SNIPPETS (real candidate reports):
+{search_snippets}
+
+TASK: Produce 5-8 interview questions. Synthesize them from the live search snippets (real candidate reports) plus standard role-pattern questions. For each question set:
+- category: one of technical / behavioral / company-fit / project-deep-dive
+- suggested_focus: what the candidate should emphasise, drawn from their recalled memory
+- grounding: use "commonly-reported" ONLY when a search snippet supports it, otherwise "likely-based-on-role"
+Never claim "this exact question was asked" unless a snippet directly supports it.
+
+{format_instructions}

@@ -1,0 +1,9 @@
+Answer as the candidate. This is an interview answer.
+
+CANDIDATE MEMORY (recalled by Cognee):
+{context}
+
+QUESTION OR JOB DESCRIPTION:
+{question_or_job_description}
+
+TASK: Write a strong, human, confident interview answer. Use the STAR format (Situation, Task, Action, Result) when suitable, grounded in the candidate's remembered projects, past answers, and feedback preferences. If a job description is given instead of a question, answer the single most likely interview question for that role.
