@@ -183,11 +183,6 @@ class JobDetailOut(JobOut):
 # ---- Skill gap ----
 
 
-class SkillGapIn(BaseModel):
-    job_description: str = ""
-    job_id: int | None = None
-
-
 class SkillDemand(BaseModel):
     skill: str
     count: int

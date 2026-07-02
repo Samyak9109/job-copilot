@@ -247,14 +247,6 @@ async def recall(user_id: int, query: str, datasets: list[str] | None = None, to
     return _render_context(docs)
 
 
-async def recall_docs(user_id: int, query: str, datasets: list[str] | None = None, top_k: int = 4) -> list[dict]:
-    datasets = datasets or [dataset_for(user_id)]
-    backend = _resolve_backend()
-    if backend is not None:
-        return await backend.recall(datasets, query, top_k)
-    return _local.recall(datasets, query, top_k)
-
-
 async def improve(user_id: int, note: str, company_slug: str | None = None) -> str:
     dataset = dataset_for(user_id, company_slug)
     backend = _resolve_backend()

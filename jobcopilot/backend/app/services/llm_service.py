@@ -184,7 +184,6 @@ def _offline_skill_gap(context: str, jd: str) -> str:
 
 def _offline_interview_prep(context: str, jd: str, full: str) -> str:
     company = _section(full, "COMPANY:") or "the company"
-    role = _section(full, "ROLE:") or "the role"
     has_search = "no live search results" not in full.lower()
     skills = sorted(_skills_in(context) | _skills_in(jd))[:4] or ["your core stack"]
     projects = [b.strip("- ").strip()[:80] for b in context.splitlines() if "project" in b.lower()][:2]
@@ -192,7 +191,7 @@ def _offline_interview_prep(context: str, jd: str, full: str) -> str:
     ground = "commonly-reported" if has_search else "likely-based-on-role"
     questions = [
         {
-            "question": f"Walk me through a project you're proud of and your specific role in it.",
+            "question": "Walk me through a project you're proud of and your specific role in it.",
             "category": "project-deep-dive",
             "suggested_focus": f"Lead with {focus_proj}; quantify impact.",
             "grounding": ground,

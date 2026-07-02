@@ -10,9 +10,9 @@ bcrypt>=4.1
 pdfplumber>=0.10
 python-docx>=1.1
 
-# LLM orchestration (LangChain LCEL)
+# LLM orchestration (LangChain LCEL). Only langchain-core + the provider
+# integrations are imported; the umbrella `langchain` meta-package is not needed.
 langchain-core>=0.1.40
-langchain>=0.1.14
 langchain-google-genai>=1.0.0
 langchain-openai>=0.1.0
 
