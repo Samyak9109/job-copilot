@@ -103,20 +103,28 @@ npm run dev                 # http://localhost:5173
 
 ---
 
-## Free deployment notes
-For a hackathon submission link that still works when your laptop is off, use a free
-cloud host such as Render instead of a local tunnel.
+## Deployment (Docker Compose)
+One command brings up the whole stack — FastAPI (gunicorn + uvicorn workers) behind an
+nginx-served frontend that proxies `/api` to the backend (so there's no CORS in prod):
+```bash
+cd jobcopilot
+cp .env.example .env              # set JWT_SECRET before exposing publicly
+docker compose up --build          # app: http://localhost:8080
+```
+The backend is private on the Docker network; use `http://localhost:8080/api/health`
+through nginx for health checks.
 
-If deployed on Render's free tier, expect these limitations:
-- The service may sleep after inactivity, so the first request can take 30-60 seconds.
-- SQLite and the local JSON memory store are not reliable without a persistent disk; data
-  may reset after a restart, redeploy, or instance replacement.
-- File uploads and remembered demo data should be treated as temporary on the free tier.
+Configure via env (defaults run keyless in local memory mode):
+`JWT_SECRET`, `LLM_PROVIDER`, `GOOGLE_API_KEY`, `TAVILY_API_KEY`, `COGNEE_MODE`,
+`FRONTEND_ORIGIN`. SQLite + the local memory store persist in the `jobcopilot_data` volume.
 
-For a stable judging demo, create the demo account and seed memories during the walkthrough,
-or use a paid/persistent disk. Real AI generation can still be enabled on free hosting by
-setting `LLM_PROVIDER=gemini` and `GOOGLE_API_KEY`; otherwise the app can run in
-`LLM_PROVIDER=offline` and `COGNEE_MODE=local` for a key-free fallback.
+- **Backend image** — `python:3.12-slim`, gunicorn, `/api/health` healthcheck.
+- **Frontend image** — Vite build → nginx; `VITE_API_BASE_URL=/api` baked at build time.
+- `FRONTEND_ORIGIN` accepts a comma-separated list of allowed origins for CORS.
+- For a real domain, set `FRONTEND_ORIGIN=https://your-domain.example` and put TLS at
+  your load balancer or reverse proxy.
+
+> Set a strong `JWT_SECRET` in production. The default is a placeholder.
 
 ---
 
