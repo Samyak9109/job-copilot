@@ -103,6 +103,23 @@ npm run dev                 # http://localhost:5173
 
 ---
 
+## Free deployment notes
+For a hackathon submission link that still works when your laptop is off, use a free
+cloud host such as Render instead of a local tunnel.
+
+If deployed on Render's free tier, expect these limitations:
+- The service may sleep after inactivity, so the first request can take 30-60 seconds.
+- SQLite and the local JSON memory store are not reliable without a persistent disk; data
+  may reset after a restart, redeploy, or instance replacement.
+- File uploads and remembered demo data should be treated as temporary on the free tier.
+
+For a stable judging demo, create the demo account and seed memories during the walkthrough,
+or use a paid/persistent disk. Real AI generation can still be enabled on free hosting by
+setting `LLM_PROVIDER=gemini` and `GOOGLE_API_KEY`; otherwise the app can run in
+`LLM_PROVIDER=offline` and `COGNEE_MODE=local` for a key-free fallback.
+
+---
+
 ## Demo flow (for judges)
 1. Register → land on the dashboard.
 2. **Add Memory** → upload a resume PDF (remembered by Cognee).
