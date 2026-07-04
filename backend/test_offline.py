@@ -29,7 +29,7 @@ def _stub_env():
     class S:
         cognee_mode = "local"; cognee_api_key = ""
         llm_provider = "offline"; google_api_key = ""; openrouter_api_key = ""
-        openrouter_model = ""; gemini_model = ""; memory_store_dir = ""
+        openrouter_model = ""; gemini_model = ""; memory_store_dir = ""; mongodb_uri = ""
 
     cfg.settings = S(); sys.modules["app.config"] = cfg
     svcs = types.ModuleType("app.services"); svcs.__path__ = [str(BASE / "app/services")]

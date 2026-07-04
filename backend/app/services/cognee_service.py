@@ -202,12 +202,70 @@ class CogneeMemory:
 #  Public async interface (backend-agnostic)
 # --------------------------------------------------------------------------- #
 _local = LocalMemory()
+_mongo_local = None
 _cognee_backend: CogneeMemory | None = None
 _backend_name = "local"
 
 
+class MongoLocalMemory:
+    """Mongo-backed keyword recall used by the cloud demo."""
+
+    def _db(self):
+        from ..database import get_database, next_id, utcnow
+
+        return get_database(), next_id, utcnow
+
+    def remember(self, dataset: str, title: str, memory_type: str, text: str) -> str:
+        db, next_id, utcnow = self._db()
+        ref = f"{dataset}:{int(time.time() * 1000)}:{next_id(db, 'memory_docs')}"
+        db.memory_docs.insert_one({
+            "dataset": dataset,
+            "ref": ref,
+            "title": title,
+            "memory_type": memory_type,
+            "text": text,
+            "created_at": utcnow(),
+            "created_at_ts": time.time(),
+        })
+        return ref
+
+    def recall(self, datasets: list[str], query: str, top_k: int = 4) -> list[dict]:
+        db, _, _ = self._db()
+        q = set(_tokens(query))
+        scored: list[tuple[float, dict]] = []
+        for doc in db.memory_docs.find({"dataset": {"$in": datasets}}):
+            doc_tokens = _tokens(f"{doc.get('title', '')} {doc.get('memory_type', '')} {doc.get('text', '')}")
+            if not doc_tokens:
+                continue
+            overlap = sum(1 for t in doc_tokens if t in q)
+            score = overlap / (1 + (len(set(doc_tokens)) ** 0.5))
+            if overlap:
+                scored.append((score, doc))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        results = [d for _, d in scored[:top_k]]
+        if not results:
+            results = list(
+                db.memory_docs
+                .find({"dataset": {"$in": datasets}})
+                .sort("created_at", -1)
+                .limit(top_k)
+            )
+        return results
+
+    def improve(self, dataset: str, note: str) -> str:
+        return self.remember(dataset, "Feedback / preference", "feedback", note)
+
+    def forget(self, dataset: str, ref: str | None = None) -> int:
+        db, _, _ = self._db()
+        if ref is None:
+            result = db.memory_docs.delete_many({"dataset": dataset})
+        else:
+            result = db.memory_docs.delete_one({"dataset": dataset, "ref": ref})
+        return int(result.deleted_count)
+
+
 def _resolve_backend():
-    global _cognee_backend, _backend_name
+    global _cognee_backend, _mongo_local, _backend_name
     if settings.cognee_mode == "cognee":
         if _cognee_backend is None:
             try:
@@ -217,6 +275,11 @@ def _resolve_backend():
                 _cognee_backend = None
                 _backend_name = "local (cognee import failed)"
         return _cognee_backend
+    if getattr(settings, "mongodb_uri", ""):
+        if _mongo_local is None:
+            _mongo_local = MongoLocalMemory()
+        _backend_name = "local-mongo"
+        return None
     _backend_name = "local"
     return None
 
@@ -231,6 +294,8 @@ async def remember(user_id: int, title: str, memory_type: str, text: str) -> tup
     backend = _resolve_backend()
     if backend is not None:
         ref = await backend.remember(dataset, title, memory_type, text)
+    elif _mongo_local is not None:
+        ref = _mongo_local.remember(dataset, title, memory_type, text)
     else:
         ref = _local.remember(dataset, title, memory_type, text)
     return dataset, ref
@@ -241,6 +306,8 @@ async def recall(user_id: int, query: str, datasets: list[str] | None = None, to
     backend = _resolve_backend()
     if backend is not None:
         docs = await backend.recall(datasets, query, top_k)
+    elif _mongo_local is not None:
+        docs = _mongo_local.recall(datasets, query, top_k)
     else:
         docs = _local.recall(datasets, query, top_k)
     return _render_context(docs)
@@ -251,6 +318,8 @@ async def improve(user_id: int, note: str) -> str:
     backend = _resolve_backend()
     if backend is not None:
         await backend.improve(dataset, note)
+    elif _mongo_local is not None:
+        _mongo_local.improve(dataset, note)
     else:
         _local.improve(dataset, note)
     return dataset
@@ -260,6 +329,8 @@ async def forget(user_id: int, dataset: str, ref: str | None = None) -> int:
     backend = _resolve_backend()
     if backend is not None:
         return await backend.forget(dataset, ref)
+    if _mongo_local is not None:
+        return _mongo_local.forget(dataset, ref)
     return _local.forget(dataset, ref)
 
 

@@ -1,10 +1,7 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..dependencies import get_current_user
-from ..models import GenerationHistory, MemoryItem, MemoryLog, User
 from ..schemas import DashboardStats
 from ..services import cognee_service
 from ..services.llm_service import active_provider
@@ -13,21 +10,15 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
 @router.get("/stats", response_model=DashboardStats)
-def stats(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    total_memory = db.query(func.count(MemoryItem.id)).filter(
-        MemoryItem.user_id == user.id, MemoryItem.is_deleted == False  # noqa: E712
-    ).scalar() or 0
-    total_gen = db.query(func.count(GenerationHistory.id)).filter(
-        GenerationHistory.user_id == user.id
-    ).scalar() or 0
+def stats(db = Depends(get_db), user = Depends(get_current_user)):
+    total_memory = db.memory_items.count_documents({"user_id": user.id, "is_deleted": False})
+    total_gen = db.generation_history.count_documents({"user_id": user.id})
     action_counts = {
-        action: count
-        for action, count in (
-            db.query(MemoryLog.action_type, func.count(MemoryLog.id))
-            .filter(MemoryLog.user_id == user.id)
-            .group_by(MemoryLog.action_type)
-            .all()
-        )
+        row["_id"]: row["count"]
+        for row in db.memory_logs.aggregate([
+            {"$match": {"user_id": user.id}},
+            {"$group": {"_id": "$action_type", "count": {"$sum": 1}}},
+        ])
     }
 
     return DashboardStats(
@@ -41,6 +32,6 @@ def stats(db: Session = Depends(get_db), user: User = Depends(get_current_user))
 
 
 @router.get("/system")
-def system_info(user: User = Depends(get_current_user)):
+def system_info(user = Depends(get_current_user)):
     """Surfaced in the UI so judges can see which memory + LLM backends are live."""
     return {"memory_backend": cognee_service.backend_name(), "llm_provider": active_provider()}

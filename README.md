@@ -14,7 +14,7 @@ per-user career memory** with **Cognee**, and uses **LangChain** to turn that re
 memory into clean, structured, reliable application content every time.
 
 ## Tech stack
-React + Vite + Tailwind · FastAPI + SQLAlchemy + SQLite · **Cognee** (memory) ·
+React + Vite + Tailwind · FastAPI + MongoDB Atlas / local Mongo · **Cognee** (memory) ·
 **LangChain** (LCEL orchestration) · Gemini / OpenRouter · Tavily (interview grounding).
 
 ---
@@ -105,18 +105,35 @@ npm run dev                 # http://localhost:5173
 
 ## Free deployment notes
 For a hackathon submission link that still works when your laptop is off, use a free
-cloud host such as Render instead of a local tunnel.
+cloud host instead of a local tunnel. The recommended free setup is Render for the
+FastAPI backend and Vercel for the React frontend.
 
 If deployed on Render's free tier, expect these limitations:
 - The service may sleep after inactivity, so the first request can take 30-60 seconds.
-- SQLite and the local JSON memory store are not reliable without a persistent disk; data
-  may reset after a restart, redeploy, or instance replacement.
-- File uploads and remembered demo data should be treated as temporary on the free tier.
+- Use MongoDB Atlas for persistence. Render's local filesystem is temporary on the free tier,
+  so do not rely on local files for judging data.
+- Uploaded resume/DOCX content is extracted and stored as memory text in MongoDB; original
+  uploaded files are not treated as durable storage.
 
-For a stable judging demo, create the demo account and seed memories during the walkthrough,
-or use a paid/persistent disk. Real AI generation can still be enabled on free hosting by
-setting `LLM_PROVIDER=gemini` and `GOOGLE_API_KEY`; otherwise the app can run in
-`LLM_PROVIDER=offline` and `COGNEE_MODE=local` for a key-free fallback.
+For a stable judging demo, create a free MongoDB Atlas cluster and set `MONGODB_URI`.
+Real AI generation can be enabled on free hosting by setting `LLM_PROVIDER=gemini` and
+`GOOGLE_API_KEY`; otherwise the app can run in `LLM_PROVIDER=offline` and
+`COGNEE_MODE=local` for a key-free fallback.
+
+### Render backend + Vercel frontend
+Backend on Render:
+- Root directory: `backend`
+- Runtime: Docker
+- Health check path: `/api/health`
+- Required env: `JWT_SECRET`, `LLM_PROVIDER=gemini`, `GOOGLE_API_KEY`,
+  `COGNEE_MODE=local`, `MONGODB_URI`, `MONGODB_DB=jobcopilot`,
+  `FRONTEND_ORIGIN=https://your-vercel-app.vercel.app`
+
+Frontend on Vercel:
+- Framework preset: Vite
+- Build command: `cd frontend && npm ci && npm run build`
+- Output directory: `frontend/dist`
+- Required env: `VITE_API_BASE_URL=https://your-render-backend.onrender.com/api`
 
 ---
 

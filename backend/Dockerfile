@@ -17,10 +17,6 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY app ./app
 
-# Persisted data (SQLite DB + local memory store) lives here.
-RUN mkdir -p /app/uploads
-VOLUME ["/app/uploads"]
-
 EXPOSE 10000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

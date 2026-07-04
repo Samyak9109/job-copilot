@@ -1,8 +1,8 @@
-# Core runtime — installs cleanly everywhere, powers the full app in local memory mode.
+# Core runtime
 fastapi>=0.110
 uvicorn[standard]>=0.27
 gunicorn>=21.2
-SQLAlchemy>=2.0
+pymongo>=4.7
 pydantic>=2.6
 pydantic-settings>=2.1
 email-validator>=2.1

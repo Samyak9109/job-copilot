@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 
 from ..chains import chains
-from ..database import get_db
+from ..database import get_db, next_id, utcnow
 from ..dependencies import get_current_user
-from ..models import GenerationHistory, User
 from ..schemas import InterviewPrepIn, InterviewPrepOut, InterviewQuestionOut
 from ..services import cognee_service
 from ..services.lifecycle import log_action
@@ -16,24 +14,20 @@ router = APIRouter(prefix="/api/interview", tags=["interview"])
 @router.post("/prep", response_model=InterviewPrepOut)
 async def interview_prep(
     payload: InterviewPrepIn,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    db = Depends(get_db),
+    user = Depends(get_current_user),
 ):
-    # 1. recall the candidate's own memory relevant to this JD
     user_context = await cognee_service.recall(
         user.id, f"resume, projects and skills matching: {payload.job_description or payload.role}"
     )
-    # 2. recall any past interview Q&A the user has stored for this company
     company_history = await cognee_service.recall(
         user.id, f"past interview questions and answers for {payload.company}"
     )
     log_action(db, user.id, "RECALLED", f"Recalled memory for interview prep at {payload.company}",
                {"company": payload.company, "role": payload.role})
 
-    # 3. ground in real candidate-reported questions via Tavily (snippets only)
     snippets = search_interview_questions(payload.company, payload.role)
 
-    # 4. LangChain chain -> structured question list
     try:
         result = chains.run_interview_prep(
             company=payload.company,
@@ -48,23 +42,23 @@ async def interview_prep(
 
     questions = [InterviewQuestionOut(**q) for q in result.get("questions", [])]
 
-    history = GenerationHistory(
-        user_id=user.id,
-        output_type="interview_prep",
-        input_text=f"{payload.company} | {payload.role}",
-        recalled_context_preview=(user_context or "")[:500],
-        output_text="\n".join(q.question for q in questions),
-    )
-    db.add(history)
-    db.flush()
+    history = {
+        "id": next_id(db, "generation_history"),
+        "user_id": user.id,
+        "job_id": None,
+        "output_type": "interview_prep",
+        "input_text": f"{payload.company} | {payload.role}",
+        "recalled_context_preview": (user_context or "")[:500],
+        "output_text": "\n".join(q.question for q in questions),
+        "created_at": utcnow(),
+    }
+    db.generation_history.insert_one(history)
     log_action(db, user.id, "GENERATED", f"Generated interview prep for {payload.company}",
-               {"generation_id": history.id, "grounded": bool(snippets)})
-    db.commit()
-    db.refresh(history)
+               {"generation_id": history["id"], "grounded": bool(snippets)})
 
     return InterviewPrepOut(
-        generation_id=history.id,
+        generation_id=history["id"],
         questions=questions,
         sources=snippets,
-        recalled_context_preview=(user_context or "")[:500],
+        recalled_context_preview=history["recalled_context_preview"],
     )

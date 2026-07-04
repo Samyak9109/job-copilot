@@ -1,12 +1,21 @@
-# Job Copilot — full stack in two containers.
+# Job Copilot — full stack in three containers.
 #   docker compose up --build
 #   app: http://localhost:8080   api: proxied at http://localhost:8080/api
 services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - jobcopilot_mongo:/data/db
+    restart: unless-stopped
+
   backend:
     build: ./backend
     environment:
       # Runs keyless in local memory mode by default. Add keys to go live.
+      PORT: 8000
       JWT_SECRET: ${JWT_SECRET:-please_change_me_in_prod}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017}
+      MONGODB_DB: ${MONGODB_DB:-jobcopilot}
       LLM_PROVIDER: ${LLM_PROVIDER:-offline}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
@@ -15,12 +24,10 @@ services:
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
       COGNEE_MODE: ${COGNEE_MODE:-local}
       COGNEE_API_KEY: ${COGNEE_API_KEY:-}
-      DATABASE_URL: sqlite:////app/uploads/jobcopilot.db
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:8080}
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
-      MEMORY_STORE_DIR: /app/uploads/memory_store
-    volumes:
-      - jobcopilot_data:/app/uploads
+    depends_on:
+      - mongo
     restart: unless-stopped
 
   frontend:
@@ -37,4 +44,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  jobcopilot_data:
+  jobcopilot_mongo:

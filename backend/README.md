@@ -20,7 +20,7 @@ Prod run: `gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0
 app/
   main.py            FastAPI app + router registration
   config.py          env-driven settings
-  database.py        SQLAlchemy engine + session
+  database.py        MongoDB client, counters, indexes, and document helpers
   models.py          users, memory_items, generation_history, jobs, skill_gaps, feedback, memory_logs
   schemas.py         pydantic request/response models
   auth.py            bcrypt + JWT
