@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+*.db
+uploads/
+.env
+test_offline.py
+README.md
+requirements-cognee.txt

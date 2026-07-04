@@ -1,5 +1,7 @@
+# Core runtime — installs cleanly everywhere, powers the full app in local memory mode.
 fastapi>=0.110
 uvicorn[standard]>=0.27
+gunicorn>=21.2
 SQLAlchemy>=2.0
 pydantic>=2.6
 pydantic-settings>=2.1
@@ -16,9 +18,10 @@ langchain-core>=0.1.40
 langchain-google-genai>=1.0.0
 langchain-openai>=0.1.0
 
-# Long-term memory (Cognee). Heavy; optional at runtime.
-# The app degrades to a local semantic store if this is absent (see cognee_service.py).
-cognee>=0.1.15
-
 # Search grounding for interview prep
 tavily-python>=0.3.0
+
+# NOTE: The real Cognee SDK is an OPTIONAL heavy dependency, pinned separately in
+# requirements-cognee.txt. It is only needed when COGNEE_MODE=cognee; otherwise the
+# app uses its built-in local semantic store. Install it with:
+#   pip install -r requirements-cognee.txt   (requires Python <= 3.12)

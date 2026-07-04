@@ -89,7 +89,9 @@ uvicorn app.main:app --reload --port 8000
 ```
 Runs out-of-the-box with **no keys** (`COGNEE_MODE=local`, offline LLM). Add
 `GOOGLE_API_KEY` for real generation and `TAVILY_API_KEY` for real interview grounding.
-Set `COGNEE_MODE=cognee` + `COGNEE_API_KEY` to use the real Cognee SDK.
+To use the **real Cognee SDK**: `pip install -r requirements-cognee.txt` (needs Python ≤
+3.12) and set `COGNEE_MODE=cognee` + `COGNEE_API_KEY`. Cognee is intentionally kept out of
+the core `requirements.txt` so the app always installs and runs.
 
 ### Frontend
 ```bash
@@ -98,6 +100,25 @@ npm install
 cp .env.example .env        # VITE_API_BASE_URL=http://localhost:8000/api
 npm run dev                 # http://localhost:5173
 ```
+
+---
+
+## Deployment (Docker Compose)
+One command brings up the whole stack — FastAPI (gunicorn + uvicorn workers) behind an
+nginx-served frontend that proxies `/api` to the backend (so there's no CORS in prod):
+```bash
+cd jobcopilot
+docker compose up --build          # frontend: http://localhost:8080
+```
+Configure via env (all optional — defaults run keyless in local memory mode):
+`JWT_SECRET`, `LLM_PROVIDER`, `GOOGLE_API_KEY`, `TAVILY_API_KEY`, `COGNEE_MODE`,
+`FRONTEND_ORIGIN`. SQLite + the local memory store persist in the `jobcopilot_data` volume.
+
+- **Backend image** — `python:3.12-slim`, gunicorn, `/api/health` healthcheck.
+- **Frontend image** — Vite build → nginx; `VITE_API_BASE_URL=/api` baked at build time.
+- `FRONTEND_ORIGIN` accepts a comma-separated list of allowed origins for CORS.
+
+> Set a strong `JWT_SECRET` in production. The default is a placeholder.
 
 ---
 

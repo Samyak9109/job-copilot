@@ -11,6 +11,10 @@ Docs: http://localhost:8000/docs · Health: http://localhost:8000/api/health
 
 Works with **no API keys** (local memory + offline LLM). Add keys in `.env` to go live.
 
+Cognee is optional and split out: `pip install -r requirements-cognee.txt` (Python ≤ 3.12)
+then set `COGNEE_MODE=cognee`. Production: see `../docker-compose.yml` (gunicorn + nginx).
+Prod run: `gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000`.
+
 ## Layout
 ```
 app/

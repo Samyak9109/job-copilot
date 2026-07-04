@@ -1,0 +1,35 @@
+# Job Copilot — full stack in two containers.
+#   docker compose up --build
+#   frontend: http://localhost:8080   backend: http://localhost:8000/api
+services:
+  backend:
+    build: ./backend
+    environment:
+      # Runs keyless in local memory mode by default. Add keys to go live.
+      JWT_SECRET: ${JWT_SECRET:-please_change_me_in_prod}
+      LLM_PROVIDER: ${LLM_PROVIDER:-offline}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      COGNEE_MODE: ${COGNEE_MODE:-local}
+      COGNEE_API_KEY: ${COGNEE_API_KEY:-}
+      DATABASE_URL: sqlite:////app/uploads/jobcopilot.db
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:8080}
+    volumes:
+      - jobcopilot_data:/app/uploads
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Relative /api -> nginx proxies to the backend service (no CORS).
+        VITE_API_BASE_URL: /api
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  jobcopilot_data:
