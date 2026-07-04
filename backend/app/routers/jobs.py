@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..database import get_db, next_id, public_doc, utcnow
@@ -21,7 +19,7 @@ def _apply_status(job: dict, status: str):
     job["status"] = status
     field = _STATUS_DATE_FIELD.get(status)
     if field and job.get(field) is None:
-        job[field] = datetime.now(timezone.utc)
+        job[field] = utcnow()
 
 
 def _owned(db, user, job_id: int) -> dict:

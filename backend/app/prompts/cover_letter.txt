@@ -1,6 +1,6 @@
 Write a personalized cover letter for the candidate.
 
-CANDIDATE MEMORY (recalled by Cognee):
+CANDIDATE MEMORY:
 {context}
 
 JOB DESCRIPTION:

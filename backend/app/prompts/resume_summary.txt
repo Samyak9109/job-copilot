@@ -1,6 +1,6 @@
 Write a resume summary (professional summary) for the candidate.
 
-CANDIDATE MEMORY (recalled by Cognee):
+CANDIDATE MEMORY:
 {context}
 
 JOB DESCRIPTION:

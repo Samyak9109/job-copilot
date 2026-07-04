@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from ..database import get_db, next_id, utcnow
 from ..dependencies import get_current_user
 from ..schemas import FeedbackIn
-from ..services import cognee_service
+from ..services import memory_service
 from ..services.lifecycle import log_action
 
 router = APIRouter(prefix="/api/feedback", tags=["feedback"])
@@ -42,9 +42,9 @@ async def submit_feedback(payload: FeedbackIn, db = Depends(get_db), user = Depe
     note += f" (Context: {generation['output_type']} generation.)"
 
     try:
-        dataset = await cognee_service.improve(user.id, note)
+        dataset = await memory_service.improve(user.id, note)
     except Exception as exc:  # pragma: no cover
-        raise HTTPException(status_code=502, detail=f"Cognee improve failed: {exc}") from exc
+        raise HTTPException(status_code=502, detail=f"Memory improve failed: {exc}") from exc
 
     db.feedback.update_one({"id": fb["id"], "user_id": user.id}, {"$set": {"improved_memory": True}})
     log_action(db, user.id, "IMPROVED", f"Improved memory from feedback: {payload.rating}",

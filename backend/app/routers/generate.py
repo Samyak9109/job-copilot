@@ -1,14 +1,12 @@
-import json
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..chains import chains
-from ..database import get_db, next_id, public_doc, utcnow
+from ..database import get_db, next_id, utcnow
 from ..dependencies import get_current_user
 from ..schemas import GenerateIn, GenerateOut
-from ..services import cognee_service
+from ..services import memory_service
+from ..services.generation_history import record_generation
 from ..services.lifecycle import log_action
-from ..utils import truncate
 
 router = APIRouter(prefix="/api/generate", tags=["generate"])
 
@@ -38,9 +36,9 @@ async def generate(payload: GenerateIn, db = Depends(get_db), user = Depends(get
 
     recall_query = f"{_RECALL_QUERIES[payload.output_type]}. {job_description}".strip()
     try:
-        context = await cognee_service.recall(user.id, recall_query)
+        context = await memory_service.recall(user.id, recall_query)
     except Exception as exc:  # pragma: no cover
-        raise HTTPException(status_code=502, detail=f"Cognee recall failed: {exc}") from exc
+        raise HTTPException(status_code=502, detail=f"Memory recall failed: {exc}") from exc
 
     log_action(db, user.id, "RECALLED", f"Recalled memory for {payload.output_type}",
                {"query": recall_query[:200]})
@@ -57,19 +55,16 @@ async def generate(payload: GenerateIn, db = Depends(get_db), user = Depends(get
 
     output_text = result.get("text")
     structured = result.get("structured")
-    stored_output = output_text if output_text is not None else json.dumps(structured)
-
-    history = {
-        "id": next_id(db, "generation_history"),
-        "user_id": user.id,
-        "job_id": payload.job_id,
-        "output_type": payload.output_type,
-        "input_text": job_description,
-        "recalled_context_preview": truncate(context, 500),
-        "output_text": stored_output,
-        "created_at": utcnow(),
-    }
-    db.generation_history.insert_one(history)
+    history = record_generation(
+        db,
+        user_id=user.id,
+        job_id=payload.job_id,
+        output_type=payload.output_type,
+        input_text=job_description,
+        recalled_context=context,
+        output_text=output_text,
+        structured=structured,
+    )
 
     if payload.output_type == "skill_gap_analysis" and structured:
         db.skill_gaps.insert_one({

@@ -22,8 +22,6 @@ services:
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-meta-llama/llama-3.1-8b-instruct:free}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
-      COGNEE_MODE: ${COGNEE_MODE:-local}
-      COGNEE_API_KEY: ${COGNEE_API_KEY:-}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:8080}
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
     depends_on:

@@ -4,7 +4,7 @@ from ..config import settings
 from ..database import get_db, next_id, public_doc, utcnow
 from ..dependencies import get_current_user
 from ..schemas import MemoryItemOut, RememberTextIn
-from ..services import cognee_service
+from ..services import memory_service
 from ..services.lifecycle import log_action
 from ..services.pdf_service import extract_document_text
 from ..utils import truncate
@@ -22,9 +22,9 @@ async def _store_memory(db, user, *, title, memory_type, text, source_type, sour
     if memory_type not in ALLOWED_TYPES:
         memory_type = "other"
     try:
-        dataset, ref = await cognee_service.remember(user.id, title, memory_type, text)
+        dataset, ref = await memory_service.remember(user.id, title, memory_type, text)
     except Exception as exc:  # pragma: no cover
-        raise HTTPException(status_code=502, detail=f"Cognee remember failed: {exc}") from exc
+        raise HTTPException(status_code=502, detail=f"Memory remember failed: {exc}") from exc
 
     item = {
         "id": next_id(db, "memory_items"),
@@ -33,8 +33,8 @@ async def _store_memory(db, user, *, title, memory_type, text, source_type, sour
         "memory_type": memory_type,
         "source_type": source_type,
         "source_filename": source_filename,
-        "cognee_dataset_name": dataset,
-        "cognee_ref": ref,
+        "memory_dataset_name": dataset,
+        "memory_ref": ref,
         "content_preview": _preview(text),
         "created_at": utcnow(),
         "is_deleted": False,
@@ -98,11 +98,13 @@ async def forget_item(memory_id: int, db = Depends(get_db), user = Depends(get_c
         raise HTTPException(status_code=404, detail="Memory item not found")
 
     try:
-        await cognee_service.forget(user.id, item["cognee_dataset_name"], item.get("cognee_ref"))
+        dataset = item.get("memory_dataset_name") or item.get("cognee_dataset_name")
+        ref = item.get("memory_ref") or item.get("cognee_ref")
+        await memory_service.forget(user.id, dataset, ref)
     except Exception as exc:  # pragma: no cover
-        raise HTTPException(status_code=502, detail=f"Cognee forget failed: {exc}") from exc
+        raise HTTPException(status_code=502, detail=f"Memory forget failed: {exc}") from exc
 
     db.memory_items.update_one({"id": memory_id, "user_id": user.id}, {"$set": {"is_deleted": True}})
     log_action(db, user.id, "FORGOTTEN", f"Forgot {item['memory_type']}: {item['title']}",
-               {"dataset": item["cognee_dataset_name"], "memory_item_id": item["id"]})
+               {"dataset": dataset, "memory_item_id": item["id"]})
     return {"ok": True, "forgotten": item["title"]}

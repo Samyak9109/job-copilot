@@ -20,12 +20,8 @@ class Settings(BaseSettings):
 
     tavily_api_key: str = ""
 
-    cognee_mode: str = "local"
-    cognee_api_key: str = ""
-
     frontend_origin: str = "http://localhost:5173"
     max_upload_mb: int = 10
-    memory_store_dir: str = ""
 
 
 @lru_cache

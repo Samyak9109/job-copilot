@@ -1,4 +1,3 @@
-import json
 from collections import Counter
 
 from fastapi import APIRouter, Depends
@@ -20,16 +19,6 @@ def aggregate_skill_gaps(db = Depends(get_db), user = Depends(get_current_user))
     for row in rows:
         missing_skills = row.get("missing_skills", [])
         matched_skills = row.get("matched_skills", [])
-        if isinstance(missing_skills, str):
-            try:
-                missing_skills = json.loads(missing_skills)
-            except json.JSONDecodeError:
-                missing_skills = []
-        if isinstance(matched_skills, str):
-            try:
-                matched_skills = json.loads(matched_skills)
-            except json.JSONDecodeError:
-                matched_skills = []
         missing.update(str(s).lower() for s in missing_skills)
         matched.update(str(s).lower() for s in matched_skills)
         scores.append(int(row.get("score", 0) or 0))

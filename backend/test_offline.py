@@ -1,5 +1,5 @@
 """Dependency-free smoke test for the two demo-critical, key-free paths:
-  1. the local Cognee memory store (remember -> relevant recall -> forget)
+  1. the in-memory fallback store (remember -> relevant recall -> forget)
   2. the offline LLM generator (must emit schema-valid JSON for the LCEL parsers)
 
 Run:  python test_offline.py   (no pip install needed)
@@ -8,7 +8,6 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
-import tempfile
 import types
 
 BASE = Path(__file__).resolve().parent
@@ -27,9 +26,8 @@ def _stub_env():
     cfg = types.ModuleType("app.config")
 
     class S:
-        cognee_mode = "local"; cognee_api_key = ""
         llm_provider = "offline"; google_api_key = ""; openrouter_api_key = ""
-        openrouter_model = ""; gemini_model = ""; memory_store_dir = ""; mongodb_uri = ""
+        openrouter_model = ""; gemini_model = ""; mongodb_uri = ""
 
     cfg.settings = S(); sys.modules["app.config"] = cfg
     svcs = types.ModuleType("app.services"); svcs.__path__ = [str(BASE / "app/services")]
@@ -47,16 +45,14 @@ class _PV:
 
 def test_local_memory():
     import asyncio
-    cs = _load("app.services.cognee_service", "app/services/cognee_service.py")
+    cs = _load("app.services.memory_service", "app/services/memory_service.py")
 
     async def run():
-        with tempfile.TemporaryDirectory() as tmp:
-            cs.settings.memory_store_dir = tmp
-            ds, ref = await cs.remember(1, "Munchy", "project", "Munchy: React Node.js Express MongoDB")
-            await cs.remember(1, "Scribbl", "project", "Scribbl: React Redux Socket.IO Canvas")
-            ctx = await cs.recall(1, "React Node full-stack projects")
-            assert "Munchy" in ctx and "Scribbl" in ctx, ctx
-            assert await cs.forget(1, ds, ref) == 1
+        ds, ref = await cs.remember(1, "Munchy", "project", "Munchy: React Node.js Express MongoDB")
+        await cs.remember(1, "Scribbl", "project", "Scribbl: React Redux Socket.IO Canvas")
+        ctx = await cs.recall(1, "React Node full-stack projects")
+        assert "Munchy" in ctx and "Scribbl" in ctx, ctx
+        assert await cs.forget(1, ds, ref) == 1
 
     asyncio.run(run())
     print("[ok] local memory: remember -> recall -> forget")
@@ -64,7 +60,7 @@ def test_local_memory():
 
 def test_offline_generator():
     m = _load("app.services.llm_service", "app/services/llm_service.py")
-    ctx = ("CANDIDATE MEMORY (recalled by Cognee):\n"
+    ctx = ("CANDIDATE MEMORY:\n"
            "- [project] Munchy: React Node.js Express MongoDB JWT\n")
     jd = "JOB DESCRIPTION:\nReact, Node.js, TypeScript, Docker, AWS.\n"
 

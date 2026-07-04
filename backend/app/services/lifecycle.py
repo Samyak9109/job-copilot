@@ -1,4 +1,4 @@
-"""Helper for recording Cognee lifecycle events into the memory_logs table.
+"""Helper for recording memory lifecycle events into the memory_logs table.
 
 Every remember / recall / improve / forget / generate action funnels through here so
 the Lifecycle dashboard can render a single, trustworthy timeline of memory activity.

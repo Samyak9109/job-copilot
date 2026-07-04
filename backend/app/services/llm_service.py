@@ -95,7 +95,7 @@ def _skills_in(text: str) -> set[str]:
 
 def _offline_generate(prompt_value) -> str:
     text = _to_text(prompt_value)
-    context = _section(text, "CANDIDATE MEMORY (recalled by Cognee):") or _section(text, "CANDIDATE MEMORY:")
+    context = _section(text, "CANDIDATE MEMORY:")
     jd = _section(text, "JOB DESCRIPTION:")
     lower = text.lower()
 

@@ -1,6 +1,6 @@
 Answer as the candidate. This is an interview answer.
 
-CANDIDATE MEMORY (recalled by Cognee):
+CANDIDATE MEMORY:
 {context}
 
 QUESTION OR JOB DESCRIPTION:

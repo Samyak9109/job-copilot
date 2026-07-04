@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from functools import lru_cache
-from types import SimpleNamespace
 from typing import Any
 
 from .config import settings
@@ -49,10 +48,6 @@ def public_doc(doc: dict[str, Any] | None) -> dict[str, Any] | None:
     out = dict(doc)
     out.pop("_id", None)
     return out
-
-
-def to_obj(doc: dict[str, Any]) -> SimpleNamespace:
-    return SimpleNamespace(**public_doc(doc))
 
 
 def init_db() -> None:

@@ -1,6 +1,6 @@
 Perform a skill gap analysis for the candidate against the job.
 
-CANDIDATE MEMORY (recalled by Cognee):
+CANDIDATE MEMORY:
 {context}
 
 JOB DESCRIPTION:

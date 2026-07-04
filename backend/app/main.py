@@ -26,7 +26,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Job Copilot API",
-    description="AI career memory + generation engine — Cognee lifecycle memory orchestrated by LangChain.",
+    description="AI career memory + generation engine with MongoDB memory and LangChain orchestration.",
     version="1.0.0",
     lifespan=lifespan,
 )

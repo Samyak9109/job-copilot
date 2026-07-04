@@ -1,4 +1,0 @@
-# Optional: the real Cognee SDK (graph + vector long-term memory).
-# Only needed when COGNEE_MODE=cognee. Heavy transitive tree; requires Python <= 3.12.
-# The app runs fully without this via its built-in local semantic store.
-cognee>=0.1.15

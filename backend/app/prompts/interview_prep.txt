@@ -9,10 +9,10 @@ ROLE:
 JOB DESCRIPTION:
 {job_description}
 
-CANDIDATE MEMORY (recalled by Cognee):
+CANDIDATE MEMORY:
 {user_context}
 
-PAST INTERVIEW HISTORY (recalled by Cognee):
+PAST INTERVIEW HISTORY:
 {company_history}
 
 LIVE SEARCH SNIPPETS (real candidate reports):

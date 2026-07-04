@@ -20,8 +20,3 @@ langchain-openai>=0.1.0
 
 # Search grounding for interview prep
 tavily-python>=0.3.0
-
-# NOTE: The real Cognee SDK is an OPTIONAL heavy dependency, pinned separately in
-# requirements-cognee.txt. It is only needed when COGNEE_MODE=cognee; otherwise the
-# app uses its built-in local semantic store. Install it with:
-#   pip install -r requirements-cognee.txt   (requires Python <= 3.12)

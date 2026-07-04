@@ -1,6 +1,6 @@
 Write a short recruiter outreach message (LinkedIn or email) for the candidate.
 
-CANDIDATE MEMORY (recalled by Cognee):
+CANDIDATE MEMORY:
 {context}
 
 JOB DESCRIPTION:

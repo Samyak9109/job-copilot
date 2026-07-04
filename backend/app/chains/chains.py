@@ -1,7 +1,7 @@
 """All LangChain LCEL chains: prompt | llm | output_parser.
 
-LangChain does NOT touch memory storage. It only consumes the text that Cognee's
-recall() returns (passed in as `context` / `user_context`) and turns it, plus the
+LangChain does NOT touch memory storage. It only consumes the text that memory
+recall returns (passed in as `context` / `user_context`) and turns it, plus the
 user's current request, into clean, structured output.
 """
 from pathlib import Path

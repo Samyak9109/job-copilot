@@ -1,4 +1,4 @@
-# Job Copilot backend — Python 3.12 (Cognee-compatible if you later enable it).
+# Job Copilot backend — Python 3.12.
 FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 \
