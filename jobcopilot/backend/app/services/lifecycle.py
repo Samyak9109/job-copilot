@@ -29,6 +29,4 @@ def log_action(
         metadata_json=json.dumps(metadata) if metadata else None,
     )
     db.add(entry)
-    db.commit()
-    db.refresh(entry)
     return entry

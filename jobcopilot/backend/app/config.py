@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     frontend_origin: str = "http://localhost:5173"
     max_upload_mb: int = 10
+    memory_store_dir: str = ""
 
 
 @lru_cache

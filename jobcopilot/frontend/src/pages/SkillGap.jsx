@@ -4,6 +4,7 @@ import Layout from '../components/Layout.jsx'
 import { Field, Spinner, Chip } from '../components/ui.jsx'
 import client, { errMessage } from '../api/client.js'
 import { useToast } from '../components/Toast.jsx'
+import { selectedJobPatch } from '../utils/jobs.js'
 
 export default function SkillGap() {
   const toast = useToast()
@@ -48,8 +49,7 @@ export default function SkillGap() {
             <Field label="Link to application" hint="Optional — prefills the JD.">
               <select className="input" value={form.job_id}
                 onChange={(e) => {
-                  const job = jobs.find((j) => String(j.id) === e.target.value)
-                  setForm({ job_id: e.target.value, job_description: job?.jd_text || form.job_description })
+                  setForm(selectedJobPatch(jobs, e.target.value, form.job_description))
                 }}>
                 <option value="">None</option>
                 {jobs.map((j) => <option key={j.id} value={j.id}>{j.company} — {j.title}</option>)}

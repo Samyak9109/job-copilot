@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import { useToast } from '../components/Toast.jsx'
 import { errMessage } from '../api/client.js'
 import { Field } from '../components/ui.jsx'
-import { AuthShell } from './Login.jsx'
+import AuthShell from '../components/AuthShell.jsx'
 
 export default function Register() {
   const { user, register } = useAuth()

@@ -1,6 +1,6 @@
 # Job Copilot — full stack in two containers.
 #   docker compose up --build
-#   frontend: http://localhost:8080   backend: http://localhost:8000/api
+#   app: http://localhost:8080   api: proxied at http://localhost:8080/api
 services:
   backend:
     build: ./backend
@@ -10,11 +10,15 @@ services:
       LLM_PROVIDER: ${LLM_PROVIDER:-offline}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-meta-llama/llama-3.1-8b-instruct:free}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
       COGNEE_MODE: ${COGNEE_MODE:-local}
       COGNEE_API_KEY: ${COGNEE_API_KEY:-}
       DATABASE_URL: sqlite:////app/uploads/jobcopilot.db
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:8080}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+      MEMORY_STORE_DIR: /app/uploads/memory_store
     volumes:
       - jobcopilot_data:/app/uploads
     restart: unless-stopped
@@ -28,7 +32,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

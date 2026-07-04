@@ -7,7 +7,6 @@ from ..dependencies import get_current_user
 from ..models import GenerationHistory, User
 from ..schemas import InterviewPrepIn, InterviewPrepOut, InterviewQuestionOut
 from ..services import cognee_service
-from ..services.cognee_service import dataset_for
 from ..services.lifecycle import log_action
 from ..services.search_service import format_snippets, search_interview_questions
 
@@ -24,12 +23,9 @@ async def interview_prep(
     user_context = await cognee_service.recall(
         user.id, f"resume, projects and skills matching: {payload.job_description or payload.role}"
     )
-    # 2. recall any past interview Q&A for this company (per-company dataset)
-    company_dataset = dataset_for(user.id, payload.company, kind="jobs")
+    # 2. recall any past interview Q&A the user has stored for this company
     company_history = await cognee_service.recall(
-        user.id,
-        f"past interview questions and answers for {payload.company}",
-        datasets=[dataset_for(user.id), company_dataset],
+        user.id, f"past interview questions and answers for {payload.company}"
     )
     log_action(db, user.id, "RECALLED", f"Recalled memory for interview prep at {payload.company}",
                {"company": payload.company, "role": payload.role})
@@ -60,10 +56,11 @@ async def interview_prep(
         output_text="\n".join(q.question for q in questions),
     )
     db.add(history)
-    db.commit()
-    db.refresh(history)
+    db.flush()
     log_action(db, user.id, "GENERATED", f"Generated interview prep for {payload.company}",
                {"generation_id": history.id, "grounded": bool(snippets)})
+    db.commit()
+    db.refresh(history)
 
     return InterviewPrepOut(
         generation_id=history.id,

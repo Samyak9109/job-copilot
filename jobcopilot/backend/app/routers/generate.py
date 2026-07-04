@@ -10,6 +10,7 @@ from ..models import GenerationHistory, Job, SkillGap, User
 from ..schemas import GenerateIn, GenerateOut
 from ..services import cognee_service
 from ..services.lifecycle import log_action
+from ..utils import truncate
 
 router = APIRouter(prefix="/api/generate", tags=["generate"])
 
@@ -24,12 +25,7 @@ _RECALL_QUERIES = {
 }
 
 
-def _preview(text: str, n: int = 500) -> str:
-    return text[:n] + (" ..." if len(text) > n else "")
-
-
 @router.post("", response_model=GenerateOut)
-@router.post("/", response_model=GenerateOut)
 async def generate(payload: GenerateIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if payload.output_type not in ALLOWED:
         raise HTTPException(status_code=400, detail=f"Invalid output_type. Allowed: {sorted(ALLOWED)}")
@@ -71,12 +67,11 @@ async def generate(payload: GenerateIn, db: Session = Depends(get_db), user: Use
         job_id=payload.job_id,
         output_type=payload.output_type,
         input_text=job_description,
-        recalled_context_preview=_preview(context),
+        recalled_context_preview=truncate(context, 500),
         output_text=stored_output,
     )
     db.add(history)
-    db.commit()
-    db.refresh(history)
+    db.flush()
 
     # Persist skill-gap analyses so they can be aggregated across many JDs.
     if payload.output_type == "skill_gap_analysis" and structured:
@@ -87,15 +82,16 @@ async def generate(payload: GenerateIn, db: Session = Depends(get_db), user: Use
             missing_skills=json.dumps(structured.get("missing_skills", [])),
             score=int(structured.get("score", 0) or 0),
         ))
-        db.commit()
 
     log_action(db, user.id, "GENERATED", f"Generated {payload.output_type}",
                {"generation_id": history.id})
+    db.commit()
+    db.refresh(history)
 
     return GenerateOut(
         generation_id=history.id,
         output_type=payload.output_type,
         output_text=output_text,
         structured=structured,
-        recalled_context_preview=_preview(context),
+        recalled_context_preview=truncate(context, 500),
     )

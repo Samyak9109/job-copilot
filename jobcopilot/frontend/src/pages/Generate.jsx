@@ -4,6 +4,7 @@ import Layout from '../components/Layout.jsx'
 import { Field, Spinner } from '../components/ui.jsx'
 import client, { errMessage } from '../api/client.js'
 import { useToast } from '../components/Toast.jsx'
+import { selectedJobPatch } from '../utils/jobs.js'
 
 const OUTPUT_TYPES = [
   ['cover_letter', 'Cover Letter'],
@@ -36,8 +37,7 @@ export default function Generate() {
   }, [])
 
   function pickJob(id) {
-    const job = jobs.find((j) => String(j.id) === id)
-    setForm((f) => ({ ...f, job_id: id, job_description: job?.jd_text || f.job_description }))
+    setForm((f) => ({ ...f, ...selectedJobPatch(jobs, id, f.job_description) }))
   }
 
   async function generate(e) {

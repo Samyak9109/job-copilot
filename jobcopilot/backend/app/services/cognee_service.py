@@ -1,4 +1,4 @@
-"""Cognee memory service — the memory layer RecallHire is built around.
+"""Cognee memory service — the memory layer Job Copilot is built around.
 
 This module exposes the four lifecycle operations the whole product revolves around:
 
@@ -13,7 +13,7 @@ The public Cognee SDK does not ship functions literally named remember/recall/
 improve/forget. Its real primitives are `cognee.add()` + `cognee.cognify()`
 (ingest + build the knowledge graph), `cognee.search()` (retrieve) and
 `cognee.delete()` / dataset pruning (forget). This service is the adapter that maps
-RecallHire's lifecycle vocabulary onto those primitives.
+Job Copilot's lifecycle vocabulary onto those primitives.
 
 Two backends, chosen by COGNEE_MODE:
   * "cognee" -> uses the real Cognee SDK (needs an LLM key for cognify()).
@@ -35,7 +35,11 @@ from dataclasses import dataclass, field
 
 from ..config import settings
 
-_STORE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "memory_store")
+_DEFAULT_STORE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+    "uploads",
+    "memory_store",
+)
 _lock = threading.Lock()
 
 _STOPWORDS = {
@@ -45,14 +49,8 @@ _STOPWORDS = {
 }
 
 
-def dataset_for(user_id: int, company_slug: str | None = None, kind: str = "career_memory") -> str:
-    if company_slug:
-        return f"user_{user_id}_{kind}_{slugify(company_slug)}"
+def dataset_for(user_id: int) -> str:
     return f"user_{user_id}_career_memory"
-
-
-def slugify(text: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "_", (text or "").lower()).strip("_") or "general"
 
 
 def _format_with_metadata(title: str, memory_type: str, text: str) -> str:
@@ -76,8 +74,9 @@ class _LocalDoc:
 
 
 def _store_path(dataset: str) -> str:
-    os.makedirs(_STORE_DIR, exist_ok=True)
-    return os.path.join(_STORE_DIR, f"{dataset}.json")
+    store_dir = getattr(settings, "memory_store_dir", "") or _DEFAULT_STORE_DIR
+    os.makedirs(store_dir, exist_ok=True)
+    return os.path.join(store_dir, f"{dataset}.json")
 
 
 def _load(dataset: str) -> list[dict]:
@@ -227,8 +226,8 @@ def backend_name() -> str:
     return _backend_name
 
 
-async def remember(user_id: int, title: str, memory_type: str, text: str, company_slug: str | None = None) -> tuple[str, str]:
-    dataset = dataset_for(user_id, company_slug)
+async def remember(user_id: int, title: str, memory_type: str, text: str) -> tuple[str, str]:
+    dataset = dataset_for(user_id)
     backend = _resolve_backend()
     if backend is not None:
         ref = await backend.remember(dataset, title, memory_type, text)
@@ -247,8 +246,8 @@ async def recall(user_id: int, query: str, datasets: list[str] | None = None, to
     return _render_context(docs)
 
 
-async def improve(user_id: int, note: str, company_slug: str | None = None) -> str:
-    dataset = dataset_for(user_id, company_slug)
+async def improve(user_id: int, note: str) -> str:
+    dataset = dataset_for(user_id)
     backend = _resolve_backend()
     if backend is not None:
         await backend.improve(dataset, note)

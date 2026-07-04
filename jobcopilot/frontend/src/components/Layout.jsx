@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Menu, LogOut, X } from 'lucide-react'
 import Sidebar from './Sidebar.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
-import client from '../api/client.js'
+import { getSystemInfo } from '../api/client.js'
 
 export default function Layout({ title, subtitle, children }) {
   const { user, logout } = useAuth()
@@ -10,7 +10,7 @@ export default function Layout({ title, subtitle, children }) {
   const [sys, setSys] = useState(null)
 
   useEffect(() => {
-    client.get('/dashboard/system').then((r) => setSys(r.data)).catch(() => {})
+    getSystemInfo().then(setSys).catch(() => {})
   }, [])
 
   return (

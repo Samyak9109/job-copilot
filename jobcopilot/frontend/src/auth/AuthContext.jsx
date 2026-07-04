@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import client from '../api/client.js'
+import client, { clearSystemInfoCache } from '../api/client.js'
 
 const AuthCtx = createContext(null)
 export const useAuth = () => useContext(AuthCtx)
@@ -17,7 +17,10 @@ export function AuthProvider({ children }) {
     client
       .get('/auth/me')
       .then((res) => setUser(res.data))
-      .catch(() => localStorage.removeItem('jc_token'))
+      .catch(() => {
+        localStorage.removeItem('jc_token')
+        clearSystemInfoCache()
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -33,6 +36,7 @@ export function AuthProvider({ children }) {
 
   function logout() {
     localStorage.removeItem('jc_token')
+    clearSystemInfoCache()
     setUser(null)
   }
 

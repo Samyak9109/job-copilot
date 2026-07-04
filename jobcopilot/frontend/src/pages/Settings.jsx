@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react'
 import { User, Database, Cpu, LogOut } from 'lucide-react'
 import Layout from '../components/Layout.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
-import client from '../api/client.js'
+import { getSystemInfo } from '../api/client.js'
 
 export default function Settings() {
   const { user, logout } = useAuth()
   const [sys, setSys] = useState(null)
 
   useEffect(() => {
-    client.get('/dashboard/system').then((r) => setSys(r.data)).catch(() => {})
+    getSystemInfo().then(setSys).catch(() => {})
   }, [])
 
   return (

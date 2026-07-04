@@ -47,7 +47,6 @@ class MemoryItemOut(BaseModel):
     memory_type: str
     source_type: str
     source_filename: str | None
-    cognee_dataset_name: str
     content_preview: str
     created_at: datetime
 
@@ -123,11 +122,9 @@ class DashboardStats(BaseModel):
     total_memory_items: int
     total_generations: int
     remembered_count: int
-    recalled_count: int
     improved_count: int
     forgotten_count: int
     generated_count: int
-    last_activity: datetime | None
 
 
 # ---- Application tracker (jobs) ----
@@ -177,7 +174,7 @@ class GenerationOut(BaseModel):
 
 
 class JobDetailOut(JobOut):
-    generations: list[GenerationOut] = []
+    generations: list[GenerationOut] = Field(default_factory=list)
 
 
 # ---- Skill gap ----

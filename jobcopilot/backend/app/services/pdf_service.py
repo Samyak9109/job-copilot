@@ -30,7 +30,6 @@ def extract_docx_text(file_bytes: bytes) -> str:
 def extract_pdf_text(file_bytes: bytes) -> str:
     try:
         import pdfplumber
-        import io
     except ImportError as exc:  # pragma: no cover
         raise HTTPException(status_code=500, detail="PDF parser not installed") from exc
 

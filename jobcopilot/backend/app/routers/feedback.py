@@ -23,7 +23,6 @@ _RATING_NOTE = {
 
 
 @router.post("", status_code=201)
-@router.post("/", status_code=201)
 async def submit_feedback(payload: FeedbackIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     generation = db.get(GenerationHistory, payload.generation_id)
     if generation is None or generation.user_id != user.id:
@@ -36,8 +35,7 @@ async def submit_feedback(payload: FeedbackIn, db: Session = Depends(get_db), us
         feedback_text=payload.feedback_text,
     )
     db.add(fb)
-    db.commit()
-    db.refresh(fb)
+    db.flush()
 
     note = _RATING_NOTE.get(payload.rating, f"User feedback on {generation.output_type}: {payload.rating}.")
     if payload.feedback_text:
@@ -50,8 +48,9 @@ async def submit_feedback(payload: FeedbackIn, db: Session = Depends(get_db), us
         raise HTTPException(status_code=502, detail=f"Cognee improve failed: {exc}") from exc
 
     fb.improved_memory = True
-    db.commit()
     log_action(db, user.id, "IMPROVED", f"Improved memory from feedback: {payload.rating}",
                {"dataset": dataset, "feedback_id": fb.id, "generation_id": generation.id})
+    db.commit()
+    db.refresh(fb)
 
     return {"ok": True, "improved": True, "note": note}

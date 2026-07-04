@@ -4,16 +4,7 @@ import Layout from '../components/Layout.jsx'
 import { Field } from '../components/ui.jsx'
 import client, { errMessage } from '../api/client.js'
 import { useToast } from '../components/Toast.jsx'
-
-const MEMORY_TYPES = [
-  ['resume', 'Resume'],
-  ['project', 'Project'],
-  ['job_description', 'Job description'],
-  ['interview_answer', 'Interview answer'],
-  ['recruiter_note', 'Recruiter note'],
-  ['feedback', 'Feedback'],
-  ['other', 'Other'],
-]
+import { MEMORY_TYPES } from '../constants.js'
 
 export default function UploadMemory() {
   const toast = useToast()

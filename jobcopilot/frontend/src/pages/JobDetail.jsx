@@ -5,16 +5,7 @@ import Layout from '../components/Layout.jsx'
 import { Spinner, Chip } from '../components/ui.jsx'
 import client, { errMessage } from '../api/client.js'
 import { useToast } from '../components/Toast.jsx'
-import { STATUS_META } from './Jobs.jsx'
-
-const COLUMNS = ['applied', 'interview', 'offer', 'rejected']
-const OUTPUT_LABEL = {
-  cover_letter: 'Cover letter',
-  interview_answer: 'Interview answer',
-  resume_summary: 'Resume summary',
-  recruiter_message: 'Recruiter message',
-  skill_gap_analysis: 'Skill gap',
-}
+import { JOB_STATUSES, OUTPUT_LABEL, STATUS_META } from '../constants.js'
 
 export default function JobDetail() {
   const { id } = useParams()
@@ -67,7 +58,7 @@ export default function JobDetail() {
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {COLUMNS.map((c) => (
+              {JOB_STATUSES.map((c) => (
                 <button key={c} onClick={() => setStatus(c)}
                   className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors cursor-pointer ${
                     job.status === c ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'

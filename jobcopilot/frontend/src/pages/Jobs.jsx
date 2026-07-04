@@ -5,14 +5,7 @@ import Layout from '../components/Layout.jsx'
 import { Field, Spinner, Chip, EmptyState } from '../components/ui.jsx'
 import client, { errMessage } from '../api/client.js'
 import { useToast } from '../components/Toast.jsx'
-
-export const STATUS_META = {
-  applied: { label: 'Applied', tone: 'blue' },
-  interview: { label: 'Interview', tone: 'amber' },
-  offer: { label: 'Offer', tone: 'green' },
-  rejected: { label: 'Rejected', tone: 'red' },
-}
-const COLUMNS = ['applied', 'interview', 'offer', 'rejected']
+import { JOB_STATUSES, STATUS_META } from '../constants.js'
 
 export default function Jobs() {
   const toast = useToast()
@@ -51,7 +44,7 @@ export default function Jobs() {
           action={<button className="btn-primary" onClick={() => setShowForm(true)}><Plus size={16} /> New application</button>} />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {COLUMNS.map((col) => {
+          {JOB_STATUSES.map((col) => {
             const items = jobs.filter((j) => j.status === col)
             return (
               <div key={col} className="rounded-2xl bg-slate-100/70 p-3">
@@ -103,7 +96,7 @@ function NewJobModal({ onClose, onCreate }) {
           </div>
           <Field label="Status">
             <select className="input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-              {COLUMNS.map((c) => <option key={c} value={c}>{STATUS_META[c].label}</option>)}
+              {JOB_STATUSES.map((c) => <option key={c} value={c}>{STATUS_META[c].label}</option>)}
             </select>
           </Field>
           <Field label="Job description" hint="Reused across generation & skill-gap.">

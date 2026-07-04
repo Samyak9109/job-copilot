@@ -34,13 +34,11 @@ def _owned(db, user, job_id) -> Job:
 
 
 @router.get("", response_model=list[JobOut])
-@router.get("/", response_model=list[JobOut])
 def list_jobs(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     return db.query(Job).filter(Job.user_id == user.id).order_by(Job.updated_date.desc()).all()
 
 
 @router.post("", response_model=JobOut, status_code=201)
-@router.post("/", response_model=JobOut, status_code=201)
 def create_job(payload: JobIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     job = Job(user_id=user.id, company=payload.company.strip(), title=payload.title.strip(), jd_text=payload.jd_text)
     _apply_status(job, payload.status or "applied")
@@ -65,7 +63,6 @@ def get_job(job_id: int, db: Session = Depends(get_db), user: User = Depends(get
 
 
 @router.put("/{job_id}", response_model=JobOut)
-@router.patch("/{job_id}", response_model=JobOut)
 def update_job(job_id: int, payload: JobUpdate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     job = _owned(db, user, job_id)
     if payload.company is not None:

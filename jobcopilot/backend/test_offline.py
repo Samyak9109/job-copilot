@@ -6,12 +6,16 @@ Run:  python test_offline.py   (no pip install needed)
 """
 import importlib.util
 import json
+from pathlib import Path
 import sys
+import tempfile
 import types
+
+BASE = Path(__file__).resolve().parent
 
 
 def _load(mod_name, path):
-    spec = importlib.util.spec_from_file_location(mod_name, path)
+    spec = importlib.util.spec_from_file_location(mod_name, BASE / path)
     m = importlib.util.module_from_spec(spec)
     sys.modules[mod_name] = m
     spec.loader.exec_module(m)
@@ -19,16 +23,16 @@ def _load(mod_name, path):
 
 
 def _stub_env():
-    app = types.ModuleType("app"); app.__path__ = ["app"]; sys.modules["app"] = app
+    app = types.ModuleType("app"); app.__path__ = [str(BASE / "app")]; sys.modules["app"] = app
     cfg = types.ModuleType("app.config")
 
     class S:
         cognee_mode = "local"; cognee_api_key = ""
         llm_provider = "offline"; google_api_key = ""; openrouter_api_key = ""
-        openrouter_model = ""; gemini_model = ""
+        openrouter_model = ""; gemini_model = ""; memory_store_dir = ""
 
     cfg.settings = S(); sys.modules["app.config"] = cfg
-    svcs = types.ModuleType("app.services"); svcs.__path__ = ["app/services"]
+    svcs = types.ModuleType("app.services"); svcs.__path__ = [str(BASE / "app/services")]
     sys.modules["app.services"] = svcs
     lc = types.ModuleType("langchain_core"); lc.__path__ = []
     run = types.ModuleType("langchain_core.runnables")
@@ -46,13 +50,13 @@ def test_local_memory():
     cs = _load("app.services.cognee_service", "app/services/cognee_service.py")
 
     async def run():
-        ds, ref = await cs.remember(1, "Munchy", "project", "Munchy: React Node.js Express MongoDB")
-        await cs.remember(1, "Scribbl", "project", "Scribbl: React Redux Socket.IO Canvas")
-        ctx = await cs.recall(1, "React Node full-stack projects")
-        assert "Munchy" in ctx and "Scribbl" in ctx, ctx
-        assert await cs.forget(1, ds, ref) == 1
-        # cleanup the second doc's dataset file
-        await cs.forget(1, ds)
+        with tempfile.TemporaryDirectory() as tmp:
+            cs.settings.memory_store_dir = tmp
+            ds, ref = await cs.remember(1, "Munchy", "project", "Munchy: React Node.js Express MongoDB")
+            await cs.remember(1, "Scribbl", "project", "Scribbl: React Redux Socket.IO Canvas")
+            ctx = await cs.recall(1, "React Node full-stack projects")
+            assert "Munchy" in ctx and "Scribbl" in ctx, ctx
+            assert await cs.forget(1, ds, ref) == 1
 
     asyncio.run(run())
     print("[ok] local memory: remember -> recall -> forget")
