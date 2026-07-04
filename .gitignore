@@ -1,0 +1,5 @@
+# Local agent/tooling state
+.agents/
+.claude/
+.codex/
+skills-lock.json
