@@ -103,31 +103,6 @@ npm run dev                 # http://localhost:5173
 
 ---
 
-## Deployment (Docker Compose)
-One command brings up the whole stack — FastAPI (gunicorn + uvicorn workers) behind an
-nginx-served frontend that proxies `/api` to the backend (so there's no CORS in prod):
-```bash
-cd jobcopilot
-cp .env.example .env              # set JWT_SECRET before exposing publicly
-docker compose up --build          # app: http://localhost:8080
-```
-The backend is private on the Docker network; use `http://localhost:8080/api/health`
-through nginx for health checks.
-
-Configure via env (defaults run keyless in local memory mode):
-`JWT_SECRET`, `LLM_PROVIDER`, `GOOGLE_API_KEY`, `TAVILY_API_KEY`, `COGNEE_MODE`,
-`FRONTEND_ORIGIN`. SQLite + the local memory store persist in the `jobcopilot_data` volume.
-
-- **Backend image** — `python:3.12-slim`, gunicorn, `/api/health` healthcheck.
-- **Frontend image** — Vite build → nginx; `VITE_API_BASE_URL=/api` baked at build time.
-- `FRONTEND_ORIGIN` accepts a comma-separated list of allowed origins for CORS.
-- For a real domain, set `FRONTEND_ORIGIN=https://your-domain.example` and put TLS at
-  your load balancer or reverse proxy.
-
-> Set a strong `JWT_SECRET` in production. The default is a placeholder.
-
----
-
 ## Demo flow (for judges)
 1. Register → land on the dashboard.
 2. **Add Memory** → upload a resume PDF (remembered by Cognee).
