@@ -21,11 +21,10 @@ COPY app ./app
 RUN mkdir -p /app/uploads
 VOLUME ["/app/uploads"]
 
-EXPOSE 8000
+EXPOSE 10000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health').status==200 else 1)"
+    CMD python -c "import os,urllib.request,sys; port=os.environ.get('PORT','10000'); sys.exit(0 if urllib.request.urlopen(f'http://localhost:{port}/api/health').status==200 else 1)"
 
 # Gunicorn + uvicorn workers for production.
-CMD ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", \
-     "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120"]
+CMD ["sh", "-c", "gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-10000} --workers 2 --timeout 120"]
